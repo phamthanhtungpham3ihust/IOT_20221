@@ -1,0 +1,27 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/Espressif/**",
+                "${workspaceFolder}/node_sensor/common/**",
+                "C:/Espressif/project/node_sensor/common/**",
+                "${workspaceFolder}/gateway/components/json_generator/upstream",
+                "${workspaceFolder}/gateway/components/esp_output",
+                "${workspaceFolder}/gateway/components/dht11",
+                "C:/Espressif/frameworks/esp-idf-v4.2.4/components/esp_http_server/include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:\\msys64\\mingw64\\bin\\gcc.exe",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}

@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "smartconfig.h": "c",
+        "task.h": "c",
+        "semphr.h": "c",
+        "app_mqtt.h": "c",
+        "nvs_flash.h": "c",
+        "protocol_examples_common.h": "c",
+        "app_http_server.h": "c",
+        "mqtt_client.h": "c",
+        "app_config.h": "c",
+        "cstdlib": "c",
+        "cstring": "c",
+        "esp_wpa2.h": "c"
+    }
+}
