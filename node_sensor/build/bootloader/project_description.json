@@ -1,8 +1,8 @@
 {
     "project_name":       "bootloader",
     "project_path":       "C:/Espressif/frameworks/esp-idf-v4.2.4/components/bootloader/subproject",
-    "build_dir":          "C:/Espressif/project/node_sensor/build/bootloader",
-    "config_file":        "C:/Espressif/project/node_sensor/sdkconfig",
+    "build_dir":          "C:/Espressif/frameworks/project/node_sensor/build/bootloader",
+    "config_file":        "C:/Espressif/frameworks/project/node_sensor/sdkconfig",
     "config_defaults":    "",
     "app_elf":            "bootloader.elf",
     "app_bin":            "bootloader.bin",

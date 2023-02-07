@@ -1,4 +1,4 @@
-# Install script for directory: C:/Espressif/project/node_sensor/main
+# Install script for directory: C:/Espressif/frameworks/project/node_sensor/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

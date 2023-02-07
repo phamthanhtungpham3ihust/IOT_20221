@@ -1,7 +1,7 @@
 
 <!DOCTYPE HTML><html>
 <head>
-  <title>DHT11 DASHBOARD</title>
+  <title>SMART HOME</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
   <link rel="icon" href="data:,">
@@ -84,7 +84,7 @@
 </head>
 <body>
   <div class="topnav">
-    <h1>DHT11 DASHBOARD</h1>
+    <h1>SMART HOME</h1>
   </div>
   <div class="content">
     <div class="cards">
@@ -160,20 +160,30 @@ function clicksendinforwifi() {
 
 <script>
 var xhttp1 = new XMLHttpRequest();
+var checkbox = document.getElementById("myCheck1");
 
 xhttp1.onreadystatechange = function()
 {
     const obj = JSON.parse(this.responseText);
+    console.log(obj);
     var element1 = document.getElementById('t1');
     element1.innerText = obj.temperature;
     var element2 = document.getElementById('h1');
     element2.innerText = obj.humidity;
+    console.log(obj.button);
+    if(obj.button == 1) 
+    {
+        checkbox.checked = true;
+    }
+    else
+    {
+        checkbox.checked = false;
+    }
 }
 
 
 function myFunction1()
 {
-  var checkbox = document.getElementById("myCheck1");
   if(checkbox.checked == true)
   {
       xhttp1.open("POST", "/switch1", true);
@@ -186,32 +196,13 @@ function myFunction1()
   }
 }
 
-
 setInterval(function ( )
 {
   xhttp1.open("GET", "/get_data_dht11", true);
   xhttp1.send();
-}, 20000)
-
-// setInterval(function ( )
-// {
-//   var checkbox = document.getElementById("myCheck1");
-//   if(checkbox.checked == true)
-//   {
-//       xhttp1.open("POST", "/switch1", true);
-//       xhttp1.send("1");
-//   }
-//   else
-//   {
-//       xhttp1.open("POST", "/switch1", true);
-//       xhttp1.send("0");
-//   }
-// }, 5000)
+}, 1500)
 
 
-
-
-////
 
 var slider = document.getElementById("myRange");
 var output = document.getElementById("demo");

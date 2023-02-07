@@ -40,13 +40,15 @@ void mqtt_publish_callback(char *topic)
         temperature = dht11.temperature;
         humidity = dht11.humidity;
         sprintf(data, "%.1f@%.1f", temperature, humidity);
-        vTaskDelay(500);
+        printf("%s\n", data);
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
         app_mqtt_publish(topic, data, 0);
     }
     else
     {
-        vTaskDelay(500);
+        vTaskDelay(10000/ portTICK_PERIOD_MS);
         app_mqtt_publish("data", data, 0);
+        printf("Failed\n");
     }
     
 }

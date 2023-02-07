@@ -5,8 +5,6 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "C:/Espressif/**",
-                "${workspaceFolder}/node_sensor/common/**",
-                "C:/Espressif/project/node_sensor/common/**",
                 "${workspaceFolder}/gateway/components/json_generator/upstream",
                 "${workspaceFolder}/gateway/components/esp_output",
                 "${workspaceFolder}/gateway/components/dht11",

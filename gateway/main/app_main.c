@@ -30,14 +30,14 @@
 #define URL_POST "http://industrial.api.ubidots.com/api/v1.6/devices/ESP32_DATA?token=BBFF-ZaK8DyPbwLgHe0vB1QGSPZXEonwkLx"
 #define HOST "/api/v1.6/devices/ESP32_DATA?token=BBFF-ZaK8DyPbwLgHe0vB1QGSPZXEonwkLx"
 #define URL_GET "https://industrial.api.ubidots.com/api/v1.6/devices/esp32_data/button/lv/?token=BBFF-ZaK8DyPbwLgHe0vB1QGSPZXEonwkLx"
+#define URL_GET_BUTTON2 "https://industrial.api.ubidots.com/api/v1.6/devices/esp32_data/button_1/lv/?token=BBFF-ZaK8DyPbwLgHe0vB1QGSPZXEonwkLx"
 #define GET     "/api/v1.6/devices/esp32_data/Button/?token=BBFF-ZaK8DyPbwLgHe0vB1QGSPZXEonwkLx"
 #define WEB_PORT "80"
 
 static const char *TAG = "GATEWAY";
-
+httpd_req_t *REG;
 json_gen_test_result_t result;
-float state_get = 0.0;
-float state = 0.0;
+
 char temp[10];
 char humi[10];
 char REQUEST[352];
@@ -46,85 +46,14 @@ char REQUEST_BUTTON[352];
 char SUBREQUEST[200];
 char SUBREQUEST_BUTTON[200];
 char data[10];
-char data_get_dht11[60];
+char data_get_dht11[100];
 int flag = 0;
+int button;
 char tmp[600];
-char *check_on;
+char *check_on_button_1;
+char *check_on_button_2;
 char *check_off;
-char *error;
 
-static void http_post_data_task(void *pvParameters)
-{
-    const struct addrinfo hints = {
-        .ai_family = AF_INET,
-        .ai_socktype = SOCK_STREAM,
-    };
-    struct addrinfo *res;
-    struct in_addr *addr;
-    int s;
-    while(1) {
-        int err = getaddrinfo(WEB_SERVER, WEB_PORT, &hints, &res);
-
-        if(err != 0 || res == NULL) {
-            ESP_LOGE(TAG, "DNS lookup failed err=%d res=%p", err, res);
-            printf("ERROR from post task\n");
-            vTaskDelay(4000 / portTICK_PERIOD_MS);
-            continue;
-        }
-        addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
-        ESP_LOGI(TAG, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
-
-        s = socket(res->ai_family, res->ai_socktype, 0);
-        if(s < 0) {
-            ESP_LOGE(TAG, "... Failed to allocate socket.");
-            freeaddrinfo(res);
-            printf("ERROR from post task\n");
-            vTaskDelay(4000 / portTICK_PERIOD_MS);
-            continue;
-        }
-        ESP_LOGI(TAG, "... allocated socket");
-
-        if(connect(s, res->ai_addr, res->ai_addrlen) != 0) {
-            ESP_LOGE(TAG, "... socket connect failed errno=%d", errno);
-            close(s);
-            freeaddrinfo(res);
-            vTaskDelay(4000 / portTICK_PERIOD_MS);
-            continue;
-        }
-
-        ESP_LOGI(TAG, "... connected");
-        freeaddrinfo(res);
-        json_gen_string_temp_humidity(&result, "temperature", temp, "humidity", humi, SUBREQUEST);
-        sprintf(REQUEST, "POST %s HTTP/1.1\nHost: %s\nContent-Length: %d\n\n%s\n", HOST, WEB_SERVER, strlen(SUBREQUEST), SUBREQUEST);
-        
-        if (write(s, REQUEST, strlen(REQUEST)) < 0) {
-            ESP_LOGE(TAG, "... socket send failed");
-            close(s);
-            vTaskDelay(1 / portTICK_PERIOD_MS);
-            continue;
-        }
-        ESP_LOGI(TAG, "... socket send success");
-
-        struct timeval receiving_timeout;
-        receiving_timeout.tv_sec = 1;
-        receiving_timeout.tv_usec = 0;
-        if (setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout,
-                sizeof(receiving_timeout)) < 0) {
-            ESP_LOGE(TAG, "... failed to set socket receiving timeout");
-            close(s);
-            vTaskDelay(40 / portTICK_PERIOD_MS);
-            continue;
-        }
-        ESP_LOGI(TAG, "... set socket receiving timeout success");
-    
-        close(s);
-        for(int countdown = 20; countdown >= 0; countdown--) {
-            ESP_LOGI(TAG, "%d... ", countdown);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-        }
-        ESP_LOGI(TAG, "Starting again!");
-    }
-}
 
 esp_err_t client_event_post_handler(esp_http_client_event_handle_t evt)
 {
@@ -139,6 +68,7 @@ esp_err_t client_event_post_handler(esp_http_client_event_handle_t evt)
     }
     return ESP_OK;
 }
+
 
 static void post_rest_function(void)
 {
@@ -172,24 +102,26 @@ static void post_rest_function(void)
     esp_http_client_cleanup(client);
 }
 
-esp_err_t client_event_get_handler(esp_http_client_event_handle_t evt)
+esp_err_t client_event_get_button1_handler(esp_http_client_event_handle_t evt)
 {
     switch (evt->event_id)
     {
     case HTTP_EVENT_ON_DATA:
         printf("HTTP_EVENT_ON_DATA: %.*s\n", evt->data_len, (char *)evt->data);
-        sprintf(tmp, "HTTP_EVENT_ON_DATA: %.*s\n", evt->data_len, (char *)evt->data);
-        check_on = strstr(tmp, "1.0");
-        check_off = strstr(tmp, "0.0");
-        if(check_on != NULL)
+        //sprintf(tmp, "HTTP_EVENT_ON_DATA: %.*s\n", evt->data_len, (char *)evt->data);
+        check_on_button_1 = strstr((char*)evt->data, "1.0");
+        //check_off = strstr((char*)evt->data, "0.0");
+        if(check_on_button_1 != NULL)
         {
-            esp_output_set_level(2, 1);
-            app_mqtt_publish("button", "ON", 0);
+            button = 1;
+            //esp_output_set_level(2, 1);
+            app_mqtt_publish("button1", "ON1", 0);
         }
-        else if(check_off != NULL)
+        else
         {
-            esp_output_set_level(2, 0);
-            app_mqtt_publish("button", "OFF", 0);
+            button = 0;
+            //esp_output_set_level(2, 0);
+            app_mqtt_publish("button1", "OFF1", 0);
         }
         break;
 
@@ -199,7 +131,36 @@ esp_err_t client_event_get_handler(esp_http_client_event_handle_t evt)
     return ESP_OK;
 }
 
-static void http_get_task(void *pvParameters)
+esp_err_t client_event_get_button2_handler(esp_http_client_event_handle_t evt)
+{
+    switch (evt->event_id)
+    {
+    case HTTP_EVENT_ON_DATA:
+        printf("HTTP_EVENT_ON_DATA: %.*s\n", evt->data_len, (char *)evt->data);
+        //sprintf(tmp, "HTTP_EVENT_ON_DATA: %.*s\n", evt->data_len, (char *)evt->data);
+        check_on_button_2 = strstr((char*)evt->data, "1.0");
+        //check_off = strstr((char*)evt->data, "0.0");
+        if(check_on_button_2 != NULL)
+        {
+            //button = 1;
+            //esp_output_set_level(2, 1);
+            app_mqtt_publish("button2", "ON2", 0);
+        }
+        else
+        {
+            //button = 0;
+            //esp_output_set_level(2, 0);
+            app_mqtt_publish("button2", "OFF2", 0);
+        }
+        break;
+
+    default:
+        break;
+    }
+    return ESP_OK;
+}
+
+static void http_get_button1_task(void *pvParameters)
 {
     for( ;; )
     {
@@ -207,11 +168,52 @@ static void http_get_task(void *pvParameters)
         .url = URL_GET,
         .method = HTTP_METHOD_GET,
         .cert_pem = NULL,
-        .event_handler = client_event_get_handler};
+        .event_handler = client_event_get_button1_handler};
         esp_http_client_handle_t client = esp_http_client_init(&config_get);
         esp_http_client_perform(client);
         esp_http_client_cleanup(client);
+        vTaskDelay(1 / portTICK_PERIOD_MS);
     }
+}
+
+static void http_get_button2_task(void *pvParameters)
+{
+    for( ;; )
+    {
+        esp_http_client_config_t config_get = {
+        .url = URL_GET_BUTTON2,
+        .method = HTTP_METHOD_GET,
+        .cert_pem = NULL,
+        .event_handler = client_event_get_button2_handler};
+        esp_http_client_handle_t client = esp_http_client_init(&config_get);
+        esp_http_client_perform(client);
+        esp_http_client_cleanup(client);
+        vTaskDelay(2 / portTICK_PERIOD_MS);
+    }
+}
+
+static void http_post_task(void)
+{
+    for( ;;)
+    {
+        esp_http_client_config_t config_post = {
+        .url = URL_POST,
+        .method = HTTP_METHOD_POST,
+        .cert_pem = NULL,
+        .event_handler = client_event_post_handler};
+        
+        esp_http_client_handle_t client = esp_http_client_init(&config_post);
+        json_gen_string_temp_humidity(&result, "temperature", temp, "humidity", humi, REQUEST);
+        //sprintf(REQUEST, "POST %s HTTP/1.1\nHost: %s\nContent-Length: %d\n\n%s\n", HOST, WEB_SERVER, strlen(SUBREQUEST), SUBREQUEST);
+        
+        esp_http_client_set_post_field(client, REQUEST, strlen(REQUEST));
+        esp_http_client_set_header(client, "Content-Type", "application/json");
+
+        esp_http_client_perform(client);
+        esp_http_client_cleanup(client);
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
+    }
+    
 }
 
 void mqtt_data_event_callback(char *data, uint16_t len)
@@ -225,33 +227,37 @@ void mqtt_data_event_callback(char *data, uint16_t len)
 
 void http_get_dht11_callback(httpd_req_t *req)
 {
-    sprintf(data_get_dht11, "{\"temperature\": \"%s\",\"humidity\": \"%s\"}", temp, humi);
+    sprintf(data_get_dht11, "{\"temperature\": \"%s\",\"humidity\": \"%s\", \"button\": \"%d\"}", temp, humi, button);
+    REG = req;
     httpd_resp_send(req, data_get_dht11, strlen(data_get_dht11));
-    printf("%s\n", data_get_dht11);
+    //printf("%s\n", data_get_dht11);
 }
 
 void http_switch1_callback(char *buf, int len)
 {
     if(*buf == '1')
     {
+        button = 1;
         flag = 1;
         printf("ON\n");
         post_rest_function();
         esp_output_set_level(2, 1);
-        app_mqtt_publish("button", "ON", 0);
+        app_mqtt_publish("button1", "ON1", 0);
     }
     else
     {
+        button = 0;
         flag = 0;
         printf("OFF\n");
         post_rest_function();
         esp_output_set_level(2, 0);
-        app_mqtt_publish("button", "OFF", 0);
+        app_mqtt_publish("button1", "OFF1", 0);
     }
 }
 
 void app_main(void)
 {
+    // Inittlize flash
     ESP_LOGI(TAG, "[APP] Startup..");
     ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
     ESP_LOGI(TAG, "[APP] IDF version: %s", esp_get_idf_version());
@@ -268,6 +274,8 @@ void app_main(void)
     http_get_dhtt11_set_callback(http_get_dht11_callback);
     http_switch1_set_callback(http_switch1_callback);
     
-    xTaskCreate(&http_get_task, "http_get_task", 4096, NULL, 5, NULL);
-    xTaskCreate(&http_post_data_task, "http_post_data_task", 4096, NULL, 6, NULL);
+    xTaskCreate(&http_get_button1_task, "http_get_task", 4096, NULL, 8, NULL);
+    xTaskCreate(&http_get_button2_task, "http_get_task", 4096, NULL, 7, NULL);
+    //xTaskCreate(&http_post_data_task, "http_post_data_task", 4096, NULL, 6, NULL);
+    xTaskCreate(&http_post_task, "http_post_data_task", 4096, NULL, 6, NULL);
 }

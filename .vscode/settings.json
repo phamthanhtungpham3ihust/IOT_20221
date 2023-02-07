@@ -11,6 +11,7 @@
         "app_config.h": "c",
         "cstdlib": "c",
         "cstring": "c",
-        "esp_wpa2.h": "c"
+        "esp_wpa2.h": "c",
+        "esp_log.h": "c"
     }
 }
