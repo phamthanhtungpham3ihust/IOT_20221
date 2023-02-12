@@ -22,11 +22,6 @@
 
 static const char *TAG = "NODE_SENSOR";
 
-extern const uint8_t client_cert_pem_start[] asm("_binary_client_crt_start");
-extern const uint8_t client_cert_pem_end[] asm("_binary_client_crt_end");
-extern const uint8_t client_key_pem_start[] asm("_binary_client_key_start");
-extern const uint8_t client_key_pem_end[] asm("_binary_client_key_end");
-
 struct dht11_reading dht11;
 float temperature = 0.0;
 float humidity = 0.0;
@@ -34,19 +29,23 @@ char data[10];
 
 void mqtt_publish_callback(char *topic)
 {
+    // Reading DHT11 data
     dht11 = DHT11_read();
+
+    // If checksum is correct, temparature and humidity data are updated
     if (dht11.status == DHT11_OK)
     {
         temperature = dht11.temperature;
         humidity = dht11.humidity;
         sprintf(data, "%.1f@%.1f", temperature, humidity);
         printf("%s\n", data);
-        vTaskDelay(10000 / portTICK_PERIOD_MS);
+        vTaskDelay(15000 / portTICK_PERIOD_MS);
         app_mqtt_publish(topic, data, 0);
     }
+    // If checksum isn't correct, publishing last temparature and humidity data
     else
     {
-        vTaskDelay(10000/ portTICK_PERIOD_MS);
+        vTaskDelay(15000/ portTICK_PERIOD_MS);
         app_mqtt_publish("data", data, 0);
         printf("Failed\n");
     }
@@ -55,6 +54,7 @@ void mqtt_publish_callback(char *topic)
 
 void app_main(void)
 {
+    // Initialize flash
     ESP_LOGI(TAG, "[APP] Startup..");
     ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
     ESP_LOGI(TAG, "[APP] IDF version: %s", esp_get_idf_version());
@@ -62,9 +62,17 @@ void app_main(void)
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
+
+    // Initialize DHT11 data pin at pin 23
     DHT11_init(23);
+
+    // Initialize Wi-Fi
     app_config();
+
+    // Initialize MQTT protocol
     app_mqtt_init();
     app_mqtt_start();
+
+    // Set callback function when having mqtt data publishing event
     app_mqtt_set_cb_publish(mqtt_publish_callback);
 }

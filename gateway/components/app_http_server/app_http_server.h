@@ -10,5 +10,6 @@ void start_webserver(void);
 void stop_webserver(void);
 void http_get_dhtt11_set_callback(void *cb);
 void http_switch1_set_callback(void *cb);
+void http_switch2_set_callback(void *cb);
 
 #endif

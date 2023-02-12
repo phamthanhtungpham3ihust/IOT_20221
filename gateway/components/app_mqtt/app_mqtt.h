@@ -1,7 +1,7 @@
 #ifndef __APP_MQTT_H
 #define __APP_MQTT_H
 #include <stdint.h>
-#define MQTT_BROKER     "mqtt://192.168.1.84"
+#define MQTT_BROKER     "mqtt://192.168.1.107"
 #define TOPIC           "data"
 typedef void (*mqtt_data_handle_t) (char *data, uint16_t len);
 typedef void (*mqtt_publish_handle_t) (char *topic);

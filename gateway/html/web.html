@@ -97,10 +97,10 @@
       
     </div>
   </div>
-  <h2>Toggle Switch</h2>
+  <h2>Light Switch</h2>
 
 <label class="switch">
-  <input type="checkbox" checked id="myCheck1" onclick="myFunction1()">
+  <input type="checkbox" checked="false" id="myCheck1" onclick="myFunction1()">
   <span class="slider round"></span>
 </label>
 
@@ -113,54 +113,26 @@
 </head>
 <body>
 
-<div class="slidecontainer">
-  <p>Default range slider:</p>
-  <input type="range" min="1" max="100" value="50" id="myRange">
-  
-  <p>Value: <span id="demo"></span></p>
-  
-</div>
+  <h2>Fan Switch</h2>
 
-<p>Nhap thong tin Wi-Fi</p>
-
-<label>SSID: </label>
-<input type="text" id="ssid" ><br><br>
-
-<label> Passwword: </label>
-<input type="text" id="pass" ><br><br>
+<label class="switch">
+  <input type="checkbox" checked="false" id="myCheck2" onclick="myFunction2()">
+  <span class="slider round"></span>
+</label>
 
 
-<button onclick="clicksendinforwifi()"> Send</button>
+<!DOCTYPE html>
+<html>
 
-<p id="demo"></p>
-
-
-<script>
-var slider = document.getElementById("myRange");
-var output = document.getElementById("demo");
-output.innerHTML = slider.value;
-
-slider.oninput = function() {
-  output.innerHTML = this.value;
-}
-
-function clicksendinforwifi() {
-	var ssid = document.getElementById("ssid").value;
-  var pass = document.getElementById("pass").value;
-  xhttp1.open("POST", "/inforwifi", true);
-  xhttp1.send(ssid+'@'+pass+'@');
-}
-
-</script>
-
-</body>
 </html>
-
 
 
 <script>
 var xhttp1 = new XMLHttpRequest();
-var checkbox = document.getElementById("myCheck1");
+var checkbox1 = document.getElementById("myCheck1");
+var checkbox2 = document.getElementById("myCheck2");
+checkbox1.checked = false;
+checkbox2.checked = false;
 
 xhttp1.onreadystatechange = function()
 {
@@ -171,20 +143,29 @@ xhttp1.onreadystatechange = function()
     var element2 = document.getElementById('h1');
     element2.innerText = obj.humidity;
     console.log(obj.button);
-    if(obj.button == 1) 
+    if(obj.button1 == 1) 
     {
-        checkbox.checked = true;
+        checkbox1.checked = true;
     }
-    else
+    else if(obj.button1 == 0)
     {
-        checkbox.checked = false;
+        checkbox1.checked = false;
+    }
+    
+    if(obj.button2 == 1) 
+    {
+        checkbox2.checked = true;
+    }
+    else if(obj.button2 == 0)
+    {
+        checkbox2.checked = false;
     }
 }
 
 
 function myFunction1()
 {
-  if(checkbox.checked == true)
+  if(checkbox1.checked == true)
   {
       xhttp1.open("POST", "/switch1", true);
       xhttp1.send("1");
@@ -192,6 +173,20 @@ function myFunction1()
   else
   {
       xhttp1.open("POST", "/switch1", true);
+      xhttp1.send("0");
+  }
+}
+
+function myFunction2()
+{
+  if(checkbox2.checked == true)
+  {
+      xhttp1.open("POST", "/switch2", true);
+      xhttp1.send("1");
+  }
+  else
+  {
+      xhttp1.open("POST", "/switch2", true);
       xhttp1.send("0");
   }
 }

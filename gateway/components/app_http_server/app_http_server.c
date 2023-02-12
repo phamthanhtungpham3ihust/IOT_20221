@@ -10,6 +10,7 @@ extern const uint8_t web_end[] asm("_binary_web_html_end");
 
 static http_app_get_handle http_get_dht11_handle = NULL;
 static http_app_post_handle http_switch1_handle = NULL;
+static http_app_post_handle http_switch2_handle = NULL;
 
 
 /* An HTTP GET handler */
@@ -71,6 +72,27 @@ static const httpd_uri_t sw1 = {
     .user_ctx  = NULL
 };
 
+
+
+static esp_err_t switch2_data_handler(httpd_req_t *req)
+{
+    char buf[100];
+
+    /* Read the data for the request */
+    int len = httpd_req_recv(req, buf, 100);
+    http_switch2_handle(buf, len);
+    // End response
+    httpd_resp_send_chunk(req, NULL, 0);
+    return ESP_OK;    
+}
+
+static const httpd_uri_t sw2 = {
+    .uri       = "/switch2",
+    .method    = HTTP_POST,
+    .handler   = switch2_data_handler,
+    .user_ctx  = NULL
+};
+
 static esp_err_t slider_data_handler(httpd_req_t *req)
 {
     char buf[100];
@@ -105,6 +127,7 @@ void start_webserver(void)
         httpd_register_uri_handler(server, &html_web);
         httpd_register_uri_handler(server, &dht11);
         httpd_register_uri_handler(server, &sw1);
+        httpd_register_uri_handler(server, &sw2);
         httpd_register_uri_handler(server, &slider);
     }
     else{
@@ -128,6 +151,13 @@ void http_switch1_set_callback(void *cb)
 {
     if(cb){
         http_switch1_handle = cb;
+    }
+}
+
+void http_switch2_set_callback(void *cb)
+{
+    if(cb){
+        http_switch2_handle = cb;
     }
 }
 
