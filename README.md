@@ -12,7 +12,7 @@ Với dự án này, nhóm sinh viên thực hiện triển khai một hệ th�
 ## Phần cứng:
 - 1 cảm biến nhiệt độ, độ ẩm DHT11
 - 2 module relay 5V 1 kênh (hoặc 1 module relay 5v 2 kênh)
-- 4 module ESP32 
+- 4 module ESP32: 1 module đóng vai trò là gateway, 1 module kết nối với cảm biến DHT11 để đọc dữ liệu cảm biến và kết nối với gateway, 2 module kết nối với 2 module relay để nhận lệnh điều khiển từ gateway và điều khiển đóng/cắt relay theo lệnh tương ứng
 
 # Tổ chức chương trình
 ## Dự án bao gồm 4 folder chương trình
@@ -149,4 +149,5 @@ Với dự án này, nhóm sinh viên thực hiện triển khai một hệ th�
 - Sử dụng Esptouch để kết nối Wi-Fi cho module ESP32 thông qua SmartConfig (chú ý: phải sử dụng cùng một Wi-Fi với máy tính cá nhân đang cài đặt broker Mosquitto)
 
 ## Bước 8: Lặp lại tương tụ bước 7, nạp chương trình cho module ESP32 kết nối với module relay điều khiển tắt/mở thiết bị điện thứ 2
+## Chú ý: Chương trình điều khiển tắt/mở thiết bị điện được xây dựng sẽ đóng relay (mở thiết bị điện) với tín hiệu điều khiển HIGH và cắt relay (tắt thiết bị điện) với tín hiệu điều khiển LOW, vì vậy cần chú ý cách đấu nối phần cứng tương ứng 
 ## Sau khi thực hiện thành công 8 bước trên, hệ thống đã có thể hoạt động với các chức năng: giám sát thông số nhiệt độ, độ ẩm, điều khiển tắt/mở thiết bị điện trong phòng
